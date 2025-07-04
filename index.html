@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standing Desk Market Analysis Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #f8f9fa;
+            padding: 24px;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 24px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            color: #666666;
+            font-size: 16px;
+            margin-top: 8px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .metric-card {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 24px;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .metric-value {
+            font-size: 36px;
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 8px;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .quadrant-section {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+        
+        .quadrant-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            margin: 24px auto;
+            background-color: #fafafa;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .quadrant-axis {
+            position: absolute;
+            background-color: #cccccc;
+        }
+        
+        .x-axis {
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+        }
+        
+        .y-axis {
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+        }
+        
+        .quadrant-label {
+            position: absolute;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666666;
+        }
+        
+        .label-leaders { top: 10%; right: 10%; }
+        .label-hidden { top: 10%; left: 10%; }
+        .label-risk { bottom: 10%; left: 10%; }
+        .label-exposed { bottom: 10%; right: 10%; }
+        
+        .brand-point {
+            position: absolute;
+            width: 120px;
+            padding: 8px 12px;
+            background-color: #2563eb;
+            color: white;
+            border-radius: 6px;
+            font-size: 13px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .brand-point:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+        }
+        
+        .brand-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 32px;
+        }
+        
+        .brand-card {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .brand-card:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .brand-card.selected {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+        
+        .brand-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .sentiment-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+        
+        .sentiment-fill {
+            height: 100%;
+            background-color: #10b981;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .sentiment-fill.low { background-color: #ef4444; }
+        .sentiment-fill.medium { background-color: #f59e0b; }
+        .sentiment-fill.high { background-color: #10b981; }
+        
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background-color: #f3f4f6;
+            color: #666666;
+            border-radius: 16px;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-top: 8px;
+        }
+        
+        .filter-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .filter-button {
+            padding: 8px 16px;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-right: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .filter-button:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .filter-button.active {
+            background-color: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        .detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 32px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666666;
+        }
+        
+        .axis-label {
+            position: absolute;
+            font-size: 12px;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .x-label {
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .y-label {
+            left: -100px;
+            top: 50%;
+            transform: rotate(-90deg);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Standing Desk Market Analysis Dashboard</h1>
+            <p class="subtitle">Narrative Visibility vs. Sentiment Analysis (Past 6 Months)</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Key Metrics -->
+        <div class="dashboard-grid">
+            <div class="metric-card">
+                <div class="metric-value">10</div>
+                <div class="metric-label">Brands Analyzed</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">3</div>
+                <div class="metric-label">Market Leaders</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">2</div>
+                <div class="metric-label">Hidden Gems</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">2</div>
+                <div class="metric-label">At Risk Brands</div>
+            </div>
+        </div>
+        
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h3 style="margin-bottom: 16px;">Filter by Category</h3>
+            <button class="filter-button active" data-filter="all">All Brands</button>
+            <button class="filter-button" data-filter="leaders">Leaders</button>
+            <button class="filter-button" data-filter="hidden">Hidden Gems</button>
+            <button class="filter-button" data-filter="exposed">Overexposed</button>
+            <button class="filter-button" data-filter="risk">At Risk</button>
+        </div>
+        
+        <!-- Quadrant Visualization -->
+        <div class="quadrant-section">
+            <h2 style="margin-bottom: 16px;">Brand Positioning Quadrant</h2>
+            <p style="color: #666666; margin-bottom: 24px;">Click on any brand to see detailed insights</p>
+            
+            <div class="quadrant-container">
+                <div class="quadrant-axis x-axis"></div>
+                <div class="quadrant-axis y-axis"></div>
+                
+                <div class="quadrant-label label-leaders">Leaders</div>
+                <div class="quadrant-label label-hidden">Hidden Gems</div>
+                <div class="quadrant-label label-risk">At Risk</div>
+                <div class="quadrant-label label-exposed">Overexposed</div>
+                
+                <div class="axis-label x-label">Narrative Visibility →</div>
+                <div class="axis-label y-label">Sentiment →</div>
+                
+                <!-- Brand Points -->
+                <div class="brand-point" style="top: 15%; right: 20%;" data-brand="uplift">Uplift</div>
+                <div class="brand-point" style="top: 25%; right: 30%;" data-brand="vari">Vari</div>
+                <div class="brand-point" style="top: 20%; right: 25%;" data-brand="secretlab">Secretlab</div>
+                <div class="brand-point" style="top: 35%; right: 35%;" data-brand="autonomous">Autonomous</div>
+                <div class="brand-point" style="top: 45%; right: 25%;" data-brand="branch">Branch</div>
+                <div class="brand-point" style="top: 15%; left: 15%;" data-brand="elephant">Elephant</div>
+                <div class="brand-point" style="top: 25%; left: 25%;" data-brand="vernal">Vernal</div>
+                <div class="brand-point" style="top: 65%; right: 15%;" data-brand="flexispot">FlexiSpot</div>
+                <div class="brand-point" style="top: 70%; left: 25%;" data-brand="desky">Desky</div>
+                <div class="brand-point" style="top: 25%; left: 35%;" data-brand="jarvis">Fully (Jarvis)</div>
+            </div>
+        </div>
+        
+        <!-- Brand Cards -->
+        <h2 style="margin-bottom: 16px;">Brand Analysis</h2>
+        <div class="brand-cards" id="brandCards">
+            <!-- Brand cards will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Detail Modal -->
+    <div class="detail-modal" id="detailModal">
+        <div class="modal-content">
+            <button class="close-button" onclick="closeModal()">&times;</button>
+            <div id="modalContent">
+                <!-- Modal content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Brand data
+        const brands = {
+            uplift: {
+                name: "Uplift",
+                category: "leaders",
+                sentiment: 90,
+                visibility: 85,
+                summary: "Market leader with ubiquitous presence and near-universal praise",
+                strengths: ["Rock-solid stability", "Premium versatility", "Excellent customer service"],
+                weaknesses: ["High price point", "Heavy assembly"],
+                narrative: "Consistently mentioned as the gold standard with unshakable reliability"
+            },
+            vari: {
+                name: "Vari",
+                category: "leaders",
+                sentiment: 85,
+                visibility: 75,
+                summary: "Top-tier choice with strong reputation for reliability",
+                strengths: ["Extremely sturdy", "Easy assembly", "Corporate favorite"],
+                weaknesses: ["Premium pricing", "Less buzz than competitors"],
+                narrative: "Quietly confident leader with respect from informed buyers"
+            },
+            secretlab: {
+                name: "Secretlab",
+                category: "leaders",
+                sentiment: 88,
+                visibility: 80,
+                summary: "Gaming-focused innovator with best-in-class cable management",
+                strengths: ["Integrated cable management", "Magnetic accessories", "Premium feel"],
+                weaknesses: ["Very expensive", "Heavy (150 lbs)"],
+                narrative: "Tech-savvy brand bringing gaming industry innovation to office furniture"
+            },
+            autonomous: {
+                name: "Autonomous",
+                category: "leaders",
+                sentiment: 70,
+                visibility: 75,
+                summary: "Comeback story with improved SmartDesk 5",
+                strengths: ["Modern design", "Zero wobble", "Built-in cable management"],
+                weaknesses: ["Past reputation issues", "Heavy assembly"],
+                narrative: "Successfully reinventing from budget brand to quality contender"
+            },
+            branch: {
+                name: "Branch",
+                category: "exposed",
+                sentiment: 60,
+                visibility: 80,
+                summary: "High-profile brand with mixed user experiences",
+                strengths: ["Clean aesthetics", "Good customer engagement", "Quick assembly"],
+                weaknesses: ["Stability concerns", "Doesn't match hype"],
+                narrative: "Walking tightrope between premium positioning and performance critiques"
+            },
+            elephant: {
+                name: "Elephant Desks",
+                category: "hidden",
+                sentiment: 95,
+                visibility: 20,
+                summary: "Premium solid wood specialist with evangelical customers",
+                strengths: ["Zero wobble", "Beautiful wood options", "Perfect customer service"],
+                weaknesses: ["Low brand awareness", "Limited availability"],
+                narrative: "Hidden gem creating emotional connections through craftsmanship"
+            },
+            vernal: {
+                name: "Vernal",
+                category: "hidden",
+                sentiment: 85,
+                visibility: 30,
+                summary: "Dark horse with top-tier quality",
+                strengths: ["Rock solid build", "Executive style options", "15-year warranty"],
+                weaknesses: ["Unknown brand", "Limited reviews"],
+                narrative: "Surprising newcomers with quality matching industry leaders"
+            },
+            flexispot: {
+                name: "FlexiSpot",
+                category: "exposed",
+                sentiment: 35,
+                visibility: 90,
+                summary: "Ubiquitous budget option with quality concerns",
+                strengths: ["Affordable pricing", "Wide availability", "Decent features"],
+                weaknesses: ["Wobble issues", "Poor quality control", "Astroturfing concerns"],
+                narrative: "Overexposed brand where marketing can't overcome quality warnings"
+            },
+            desky: {
+                name: "Desky",
+                category: "risk",
+                sentiment: 25,
+                visibility: 25,
+                summary: "Struggling with customer service failures",
+                strengths: ["Integrated power strip", "Local market presence"],
+                weaknesses: ["Terrible customer service", "Shipping damage", "Wobble concerns"],
+                narrative: "At risk of being written off before achieving mainstream awareness"
+            },
+            jarvis: {
+                name: "Fully (Jarvis)",
+                category: "hidden",
+                sentiment: 80,
+                visibility: 40,
+                summary: "Legacy leader with reduced visibility",
+                strengths: ["Proven quality", "Eco-friendly options", "Smooth operation"],
+                weaknesses: ["Reduced warranty", "Less marketing", "Harder to purchase"],
+                narrative: "Respected veteran now operating under Herman Miller umbrella"
+            }
+        };
+        
+        // Initialize dashboard
+        let currentFilter = 'all';
+        
+        function renderBrandCards() {
+            const container = document.getElementById('brandCards');
+            container.innerHTML = '';
+            
+            Object.entries(brands).forEach(([key, brand]) => {
+                if (currentFilter === 'all' || brand.category === currentFilter) {
+                    const card = createBrandCard(key, brand);
+                    container.appendChild(card);
+                }
+            });
+        }
+        
+        function createBrandCard(key, brand) {
+            const card = document.createElement('div');
+            card.className = 'brand-card';
+            card.dataset.brand = key;
+            
+            const sentimentClass = brand.sentiment >= 70 ? 'high' : brand.sentiment >= 40 ? 'medium' : 'low';
+            
+            card.innerHTML = `
+                <h3 class="brand-name">${brand.name}</h3>
+                <p style="font-size: 14px; color: #666; margin-bottom: 12px;">${brand.summary}</p>
+                <div class="sentiment-bar">
+                    <div class="sentiment-fill ${sentimentClass}" style="width: ${brand.sentiment}%"></div>
+                </div>
+                <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                    Sentiment: ${brand.sentiment}% | Visibility: ${brand.visibility}%
+                </div>
+                <div>
+                    <span class="tag">${brand.category}</span>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => showBrandDetail(key, brand));
+            return card;
+        }
+        
+        function showBrandDetail(key, brand) {
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('modalContent');
+            
+            content.innerHTML = `
+                <h2 style="margin-bottom: 16px;">${brand.name}</h2>
+                <p style="color: #666; margin-bottom: 24px;">${brand.narrative}</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div>
+                        <h4 style="margin-bottom: 12px; color: #10b981;">Strengths</h4>
+                        <ul style="list-style: none;">
+                            ${brand.strengths.map(s => `<li style="margin-bottom: 8px;">✓ ${s}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 12px; color: #ef4444;">Weaknesses</h4>
+                        <ul style="list-style: none;">
+                            ${brand.weaknesses.map(w => `<li style="margin-bottom: 8px;">✗ ${w}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background-color: #f8f9fa; padding: 16px; border-radius: 8px;">
+                    <h4 style="margin-bottom: 8px;">Market Position</h4>
+                    <div style="display: flex; justify-content: space-between; margin-top: 12px;">
+                        <div>
+                            <p style="font-size: 14px; color: #666;">Sentiment Score</p>
+                            <p style="font-size: 24px; font-weight: 600; color: #2563eb;">${brand.sentiment}%</p>
+                        </div>
+                        <div>
+                            <p style="font-size: 14px; color: #666;">Visibility Score</p>
+                            <p style="font-size: 24px; font-weight: 600; color: #2563eb;">${brand.visibility}%</p>
+                        </div>
+                        <div>
+                            <p style="font-size: 14px; color: #666;">Category</p>
+                            <p style="font-size: 24px; font-weight: 600; color: #2563eb;">${brand.category}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+        
+        // Filter functionality
+        document.querySelectorAll('.filter-button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.filter-button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                renderBrandCards();
+            });
+        });
+        
+        // Brand point clicks
+        document.querySelectorAll('.brand-point').forEach(point => {
+            point.addEventListener('click', function() {
+                const brandKey = this.dataset.brand;
+                const brand = brands[brandKey];
+                if (brand) {
+                    showBrandDetail(brandKey, brand);
+                }
+            });
+        });
+        
+        // Close modal on outside click
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // Initialize
+        renderBrandCards();
+    </script>
+</body>
+</html>
